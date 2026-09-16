@@ -1,0 +1,6 @@
+{
+  "name": "PlaceMate AI",
+  "description": "PlaceMate AI is an AI-powered interview preparation assistant. Practice. Prepare. Place.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
