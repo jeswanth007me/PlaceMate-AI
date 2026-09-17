@@ -21,14 +21,25 @@ function mapBackendQuestion(
     throw new Error('Malformed backend response: missing question data.');
   }
 
-  // Handle case where raw contains question object or is question string
-  const source = raw.question && typeof raw.question === 'object' ? raw.question : raw;
-  const questionText =
-    typeof source.question === 'string'
-      ? source.question
-      : typeof raw.question === 'string'
-      ? raw.question
-      : source.text || source.prompt || '';
+  // Handle case where raw contains question object, list-of-parts, or is question string
+  const source = raw.question && typeof raw.question === 'object' && !Array.isArray(raw.question) ? raw.question : raw;
+
+  let questionText = '';
+  const candidate = raw.question ?? source.question ?? source.text ?? source.prompt ?? '';
+
+  if (typeof candidate === 'string') {
+    questionText = candidate.trim();
+  } else if (Array.isArray(candidate)) {
+    // Handle Gemini list-of-parts format: [{ type: 'text', text: '...' }]
+    questionText = candidate
+      .map((part: any) => (typeof part === 'string' ? part : part?.text || ''))
+      .join('')
+      .trim();
+  } else if (candidate && typeof candidate === 'object') {
+    if (typeof candidate.text === 'string') questionText = candidate.text.trim();
+    else if (typeof candidate.prompt === 'string') questionText = candidate.prompt.trim();
+    else if (typeof candidate.question === 'string') questionText = candidate.question.trim();
+  }
 
   if (!questionText) {
     throw new Error('Backend returned an invalid question without prompt text.');
