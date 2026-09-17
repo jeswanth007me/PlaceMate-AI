@@ -225,7 +225,7 @@ function mapBackendEvaluation(
     technicalDepth: techDepth !== null ? Number(techDepth) : null,
     communication: comm !== null ? Number(comm) : null,
     projectUnderstanding: proj !== null ? Number(proj) : null,
-    retrievalOccurred,
+    retrievalOccurred: retrievalUsed,
     retrievedPrepMaterial,
     difficultyChanged,
     adaptedNextDifficulty,
