@@ -181,7 +181,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsStarting(false);
       setStartError(
         err.message ||
-        'Unable to connect to PlaceMate AI backend (http://172.17.14.18:8000). Please ensure the backend is running and reachable.'
+        'Unable to connect to PlaceMate AI backend. Please ensure the backend service is running and reachable.'
       );
     }
   };

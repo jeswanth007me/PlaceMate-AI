@@ -16,6 +16,9 @@ export const DashboardScreen: React.FC = () => {
   const hasCompletedInterviews = completedInterviews.length > 0;
   const recentInterview = hasCompletedInterviews ? completedInterviews[0] : null;
 
+  // Format nullable score — shows em-dash when the backend didn't return a value
+  const fmt = (v: number | null | undefined) => v !== null && v !== undefined ? `${v}%` : '—';
+
   return (
     <div className="flex flex-col w-full pb-16">
       <div className="p-4 sm:p-6 lg:p-8 flex flex-col gap-6 max-w-[1360px] mx-auto w-full">
@@ -230,25 +233,25 @@ export const DashboardScreen: React.FC = () => {
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
                   <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Technical</span>
                   <span className="text-xl font-bold text-white mt-1 block">
-                    {recentInterview.technicalKnowledge}%
+                    {fmt(recentInterview.technicalKnowledge)}
                   </span>
                 </div>
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
                   <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Problem Solving</span>
                   <span className="text-xl font-bold text-white mt-1 block">
-                    {recentInterview.problemSolving}%
+                    {fmt(recentInterview.problemSolving)}
                   </span>
                 </div>
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
                   <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Communication</span>
                   <span className="text-xl font-bold text-white mt-1 block">
-                    {recentInterview.communication}%
+                    {fmt(recentInterview.communication)}
                   </span>
                 </div>
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
                   <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Project Depth</span>
                   <span className="text-xl font-bold text-white mt-1 block">
-                    {recentInterview.projectUnderstanding}%
+                    {fmt(recentInterview.projectUnderstanding)}
                   </span>
                 </div>
               </div>

@@ -58,7 +58,7 @@ export const InterviewStartingScreen: React.FC = () => {
     {
       id: 'backend',
       label: 'Connecting to PlaceMate AI backend...',
-      subtext: 'POST /api/interview/start (http://172.17.14.18:8000)',
+      subtext: 'Generating your personalised interview question',
     },
   ];
 
@@ -99,10 +99,7 @@ export const InterviewStartingScreen: React.FC = () => {
                 Could Not Start Interview
               </h1>
               <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                The frontend could not connect to the PlaceMate AI backend at{' '}
-                <code className="text-xs text-amber-300 bg-black/40 px-1.5 py-0.5 rounded border border-white/10">
-                  http://172.17.14.18:8000
-                </code>
+                The PlaceMate AI service could not be reached. Please check your connection or try again in a moment.
               </p>
             </div>
 

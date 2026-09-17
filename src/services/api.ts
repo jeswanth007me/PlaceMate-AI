@@ -6,10 +6,9 @@ import {
   InterviewResult,
 } from '../types';
 
-export const DEFAULT_API_BASE = 'http://172.17.14.18:8000';
-
+// Backend base URL — configure via VITE_API_BASE in .env.local for local dev
 export const API_BASE = (
-  (import.meta as any).env?.VITE_API_BASE || DEFAULT_API_BASE
+  (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000'
 ).replace(/\/$/, '');
 
 // Adapter helper: format question from backend into frontend InterviewQuestion
@@ -105,19 +104,19 @@ function mapBackendEvaluation(
     evalData.technicalDepth ??
     evalData.technical_score ??
     evalData.score ??
-    70;
+    null;
 
   const comm =
     evalData.communication ??
     evalData.communication_score ??
     evalData.communicationScore ??
-    75;
+    null;
 
   const proj =
     evalData.project_understanding ??
     evalData.projectUnderstanding ??
     evalData.project_score ??
-    70;
+    null;
 
   const retrievalOccurred = Boolean(
     evalData.retrieval_occurred ??
@@ -164,9 +163,9 @@ function mapBackendEvaluation(
     candidateAnswer,
     strengths,
     improvements,
-    technicalDepth: Number(techDepth),
-    communication: Number(comm),
-    projectUnderstanding: Number(proj),
+    technicalDepth: techDepth !== null ? Number(techDepth) : null,
+    communication: comm !== null ? Number(comm) : null,
+    projectUnderstanding: proj !== null ? Number(proj) : null,
     retrievalOccurred,
     retrievedPrepMaterial,
     difficultyChanged,
@@ -182,10 +181,14 @@ function mapBackendResult(raw: any, threadId: string): InterviewResult {
 
   const data = raw.result || raw;
   const overall = Number(data.overall_score ?? data.overallScore ?? data.score ?? 0);
-  const tech = Number(data.technical_knowledge ?? data.technicalKnowledge ?? data.technical_depth ?? overall);
-  const prob = Number(data.problem_solving ?? data.problemSolving ?? tech);
-  const comm = Number(data.communication ?? data.communication_score ?? 75);
-  const proj = Number(data.project_understanding ?? data.projectUnderstanding ?? 75);
+  const rawTech = data.technical_knowledge ?? data.technicalKnowledge ?? data.technical_depth ?? null;
+  const tech = rawTech !== null ? Number(rawTech) : (overall > 0 ? overall : null);
+  const rawProb = data.problem_solving ?? data.problemSolving ?? null;
+  const prob = rawProb !== null ? Number(rawProb) : tech;
+  const rawComm = data.communication ?? data.communication_score ?? null;
+  const comm = rawComm !== null ? Number(rawComm) : null;
+  const rawProj = data.project_understanding ?? data.projectUnderstanding ?? null;
+  const proj = rawProj !== null ? Number(rawProj) : null;
 
   const rawEvaluations = data.evaluations || [];
   const evaluations: AnswerEvaluation[] = Array.isArray(rawEvaluations)
@@ -214,7 +217,9 @@ function mapBackendResult(raw: any, threadId: string): InterviewResult {
       : Array.isArray(data.weakAreas)
       ? data.weakAreas
       : [],
-    topicsToPrepare: Array.isArray(data.topics_to_prepare)
+    topicsToPrepare: Array.isArray(data.recommended_topics)
+      ? data.recommended_topics
+      : Array.isArray(data.topics_to_prepare)
       ? data.topics_to_prepare
       : Array.isArray(data.topicsToPrepare)
       ? data.topicsToPrepare

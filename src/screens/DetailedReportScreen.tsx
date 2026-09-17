@@ -7,6 +7,9 @@ export const DetailedReportScreen: React.FC = () => {
   const report = latestResult || (completedInterviews.length > 0 ? completedInterviews[0] : null);
   const [activeQuestionTab, setActiveQuestionTab] = useState(0);
 
+  // Format nullable score — shows em-dash when backend didn't return a value
+  const fmt = (v: number | null | undefined) => v !== null && v !== undefined ? `${v}%` : '—';
+
   if (!report) {
     return (
       <div className="flex flex-col items-center justify-center p-8 min-h-[60vh]">
@@ -82,12 +85,12 @@ export const DetailedReportScreen: React.FC = () => {
                   {m.label}
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white">{m.val}%</span>
+                  <span className="text-xl sm:text-2xl font-black text-white">{fmt(m.val)}</span>
                 </div>
                 <div className="w-full h-1 bg-white/5 rounded-full mt-2 overflow-hidden">
                   <div
                     className="h-full rounded-full"
-                    style={{ width: `${m.val}%`, backgroundColor: accents.accentColor }}
+                    style={{ width: m.val !== null && m.val !== undefined ? `${m.val}%` : '0%', backgroundColor: m.val !== null && m.val !== undefined ? accents.accentColor : 'transparent' }}
                   ></div>
                 </div>
               </div>

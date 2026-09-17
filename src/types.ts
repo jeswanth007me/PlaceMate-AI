@@ -64,9 +64,9 @@ export interface AnswerEvaluation {
   candidateAnswer: string;
   strengths: string[];
   improvements: string[];
-  technicalDepth: number; // 0-100
-  communication: number; // 0-100
-  projectUnderstanding: number; // 0-100
+  technicalDepth: number | null; // 0-100, null when not provided by backend
+  communication: number | null;  // 0-100, null when not provided by backend
+  projectUnderstanding: number | null; // 0-100, null when not provided by backend
   retrievedPrepMaterial?: RetrievedMaterial;
   adaptedNextDifficulty?: 'easy' | 'medium' | 'hard' | 'adaptive';
   difficultyChanged?: boolean;
@@ -81,10 +81,10 @@ export interface InterviewResult {
   difficulty: 'easy' | 'medium' | 'hard' | 'adaptive';
   questionsCount: number;
   overallScore: number;
-  technicalKnowledge: number;
-  problemSolving: number;
-  communication: number;
-  projectUnderstanding: number;
+  technicalKnowledge: number | null;
+  problemSolving: number | null;
+  communication: number | null;
+  projectUnderstanding: number | null;
   strengths: string[];
   weakAreas: string[];
   topicsToPrepare: string[];
