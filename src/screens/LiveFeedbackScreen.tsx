@@ -12,6 +12,9 @@ export const LiveFeedbackScreen: React.FC = () => {
 
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
 
+  // Format nullable score — shows em-dash when backend didn't return a numeric score
+  const fmt = (v: number | null | undefined) => (v !== null && v !== undefined ? `${v}%` : '—');
+
   if (!currentEvaluation) {
     return (
       <div className="min-h-screen w-full bg-[#08090C] text-[#f3f4f6] flex items-center justify-center">
@@ -73,7 +76,7 @@ export const LiveFeedbackScreen: React.FC = () => {
             </span>
             <div className="flex items-baseline justify-between mb-2">
               <span className="text-xl font-extrabold text-white">
-                {currentEvaluation.technicalDepth}%
+                {fmt(currentEvaluation.technicalDepth)}
               </span>
               <span className="text-[10px] text-slate-400">Target: 80%+</span>
             </div>
@@ -81,8 +84,8 @@ export const LiveFeedbackScreen: React.FC = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${currentEvaluation.technicalDepth}%`,
-                  backgroundColor: accents.accentColor,
+                  width: currentEvaluation.technicalDepth !== null && currentEvaluation.technicalDepth !== undefined ? `${currentEvaluation.technicalDepth}%` : '0%',
+                  backgroundColor: currentEvaluation.technicalDepth !== null && currentEvaluation.technicalDepth !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -94,7 +97,7 @@ export const LiveFeedbackScreen: React.FC = () => {
             </span>
             <div className="flex items-baseline justify-between mb-2">
               <span className="text-xl font-extrabold text-white">
-                {currentEvaluation.communication}%
+                {fmt(currentEvaluation.communication)}
               </span>
               <span className="text-[10px] text-slate-400">Structure & Clarity</span>
             </div>
@@ -102,8 +105,8 @@ export const LiveFeedbackScreen: React.FC = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${currentEvaluation.communication}%`,
-                  backgroundColor: accents.accentColor,
+                  width: currentEvaluation.communication !== null && currentEvaluation.communication !== undefined ? `${currentEvaluation.communication}%` : '0%',
+                  backgroundColor: currentEvaluation.communication !== null && currentEvaluation.communication !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -115,7 +118,7 @@ export const LiveFeedbackScreen: React.FC = () => {
             </span>
             <div className="flex items-baseline justify-between mb-2">
               <span className="text-xl font-extrabold text-white">
-                {currentEvaluation.projectUnderstanding}%
+                {fmt(currentEvaluation.projectUnderstanding)}
               </span>
               <span className="text-[10px] text-slate-400">Context Alignment</span>
             </div>
@@ -123,8 +126,8 @@ export const LiveFeedbackScreen: React.FC = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${currentEvaluation.projectUnderstanding}%`,
-                  backgroundColor: accents.accentColor,
+                  width: currentEvaluation.projectUnderstanding !== null && currentEvaluation.projectUnderstanding !== undefined ? `${currentEvaluation.projectUnderstanding}%` : '0%',
+                  backgroundColor: currentEvaluation.projectUnderstanding !== null && currentEvaluation.projectUnderstanding !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -142,12 +145,16 @@ export const LiveFeedbackScreen: React.FC = () => {
               </h3>
             </div>
             <div className="flex flex-col gap-2">
-              {currentEvaluation.strengths.map((s, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
-                  <span className="text-emerald-400 text-sm leading-none mt-0.5">•</span>
-                  <span>{s}</span>
-                </div>
-              ))}
+              {currentEvaluation.strengths && currentEvaluation.strengths.length > 0 ? (
+                currentEvaluation.strengths.map((s, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                    <span className="text-emerald-400 text-sm leading-none mt-0.5">•</span>
+                    <span>{s}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-500">Evaluated against target benchmarks.</p>
+              )}
             </div>
           </div>
 
@@ -160,12 +167,16 @@ export const LiveFeedbackScreen: React.FC = () => {
               </h3>
             </div>
             <div className="flex flex-col gap-2">
-              {currentEvaluation.improvements.map((imp, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
-                  <span className="text-amber-400 text-sm leading-none mt-0.5">•</span>
-                  <span>{imp}</span>
-                </div>
-              ))}
+              {currentEvaluation.improvements && currentEvaluation.improvements.length > 0 ? (
+                currentEvaluation.improvements.map((imp, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                    <span className="text-amber-400 text-sm leading-none mt-0.5">•</span>
+                    <span>{imp}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-500">No specific gaps identified on this turn.</p>
+              )}
             </div>
           </div>
         </div>

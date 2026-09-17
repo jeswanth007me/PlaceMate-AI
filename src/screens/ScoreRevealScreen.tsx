@@ -4,6 +4,9 @@ import { useApp } from '../context/AppContext';
 export const ScoreRevealScreen: React.FC = () => {
   const { setCurrentScreen, latestResult, accents } = useApp();
 
+  // Format nullable score — shows em-dash when backend didn't return a value
+  const fmt = (v: number | null | undefined) => (v !== null && v !== undefined ? `${v}%` : '—');
+
   if (!latestResult) {
     return (
       <div className="min-h-screen w-full bg-[#08090C] text-white flex flex-col items-center justify-center p-4">
@@ -83,14 +86,14 @@ export const ScoreRevealScreen: React.FC = () => {
               Technical Knowledge
             </span>
             <span className="text-xl font-bold text-white block mb-2">
-              {latestResult.technicalKnowledge}%
+              {fmt(latestResult.technicalKnowledge)}
             </span>
             <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${latestResult.technicalKnowledge}%`,
-                  backgroundColor: accents.accentColor,
+                  width: latestResult.technicalKnowledge !== null && latestResult.technicalKnowledge !== undefined ? `${latestResult.technicalKnowledge}%` : '0%',
+                  backgroundColor: latestResult.technicalKnowledge !== null && latestResult.technicalKnowledge !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -101,14 +104,14 @@ export const ScoreRevealScreen: React.FC = () => {
               Problem Solving
             </span>
             <span className="text-xl font-bold text-white block mb-2">
-              {latestResult.problemSolving}%
+              {fmt(latestResult.problemSolving)}
             </span>
             <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${latestResult.problemSolving}%`,
-                  backgroundColor: accents.accentColor,
+                  width: latestResult.problemSolving !== null && latestResult.problemSolving !== undefined ? `${latestResult.problemSolving}%` : '0%',
+                  backgroundColor: latestResult.problemSolving !== null && latestResult.problemSolving !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -119,14 +122,14 @@ export const ScoreRevealScreen: React.FC = () => {
               Communication
             </span>
             <span className="text-xl font-bold text-white block mb-2">
-              {latestResult.communication}%
+              {fmt(latestResult.communication)}
             </span>
             <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${latestResult.communication}%`,
-                  backgroundColor: accents.accentColor,
+                  width: latestResult.communication !== null && latestResult.communication !== undefined ? `${latestResult.communication}%` : '0%',
+                  backgroundColor: latestResult.communication !== null && latestResult.communication !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>
@@ -137,14 +140,14 @@ export const ScoreRevealScreen: React.FC = () => {
               Project Understanding
             </span>
             <span className="text-xl font-bold text-white block mb-2">
-              {latestResult.projectUnderstanding}%
+              {fmt(latestResult.projectUnderstanding)}
             </span>
             <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${latestResult.projectUnderstanding}%`,
-                  backgroundColor: accents.accentColor,
+                  width: latestResult.projectUnderstanding !== null && latestResult.projectUnderstanding !== undefined ? `${latestResult.projectUnderstanding}%` : '0%',
+                  backgroundColor: latestResult.projectUnderstanding !== null && latestResult.projectUnderstanding !== undefined ? accents.accentColor : 'transparent',
                 }}
               ></div>
             </div>

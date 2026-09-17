@@ -85,19 +85,77 @@ function mapBackendEvaluation(
   }
 
   const evalData = raw.evaluation || raw;
-  const strengths: string[] = Array.isArray(evalData.strengths)
+  const decisionLog: any[] = Array.isArray(raw.decision_log)
+    ? raw.decision_log
+    : Array.isArray(evalData.decision_log)
+    ? evalData.decision_log
+    : [];
+
+  const latestEntry = decisionLog.length > 0 ? decisionLog[decisionLog.length - 1] : null;
+
+  const rating =
+    evalData.evaluation_rating ||
+    raw.evaluation_rating ||
+    latestEntry?.evaluation_rating ||
+    null;
+
+  const feedback =
+    evalData.feedback ||
+    raw.feedback ||
+    evalData.evaluation_feedback ||
+    raw.evaluation_feedback ||
+    latestEntry?.feedback ||
+    null;
+
+  const decisionReason =
+    evalData.decision_reason ||
+    raw.decision_reason ||
+    latestEntry?.decision_reason ||
+    null;
+
+  const retrievalUsed = Boolean(
+    evalData.retrieval_used ??
+    raw.retrieval_used ??
+    latestEntry?.retrieval_used ??
+    latestEntry?.retrieval_called ??
+    evalData.retrieval_occurred ??
+    raw.retrieval_occurred
+  );
+
+  const explicitStrengths: string[] = Array.isArray(evalData.strengths)
     ? evalData.strengths
     : evalData.strength
     ? [evalData.strength]
     : [];
 
-  const improvements: string[] = Array.isArray(evalData.improvements)
+  const explicitImprovements: string[] = Array.isArray(evalData.improvements)
     ? evalData.improvements
     : Array.isArray(evalData.weaknesses)
     ? evalData.weaknesses
     : evalData.improvement
     ? [evalData.improvement]
     : [];
+
+  const strengths: string[] = [...explicitStrengths];
+  const improvements: string[] = [...explicitImprovements];
+
+  // Extract feedback and rationale from real backend data without fabricating content
+  if (strengths.length === 0 && improvements.length === 0) {
+    if (feedback && typeof feedback === 'string') {
+      if (rating === 'strong') {
+        strengths.push(feedback);
+      } else {
+        improvements.push(feedback);
+      }
+    }
+    if (decisionReason && typeof decisionReason === 'string' && decisionReason !== feedback) {
+      if (rating === 'strong') {
+        strengths.push(decisionReason);
+      } else if (rating === 'weak' || rating === 'acceptable') {
+        improvements.push(decisionReason);
+      }
+    }
+  }
 
   const techDepth =
     evalData.technical_depth ??
@@ -118,15 +176,6 @@ function mapBackendEvaluation(
     evalData.project_score ??
     null;
 
-  const retrievalOccurred = Boolean(
-    evalData.retrieval_occurred ??
-    evalData.retrievalOccurred ??
-    raw.retrieval_occurred ??
-    raw.retrievalOccurred ??
-    evalData.retrieved_material ??
-    evalData.retrieved_context
-  );
-
   let retrievedPrepMaterial = undefined;
   const rawMaterial =
     evalData.retrieved_prep_material ||
@@ -141,21 +190,31 @@ function mapBackendEvaluation(
       summary: rawMaterial.summary || rawMaterial.content || rawMaterial.description || '',
       keyConcept: rawMaterial.key_concept || rawMaterial.keyConcept || rawMaterial.concept || '',
     };
+  } else if (latestEntry?.retrieval_query && retrievalUsed) {
+    retrievedPrepMaterial = {
+      topic: latestEntry.retrieval_query,
+      summary: latestEntry.decision_reason || 'Retrieved prep material based on response evaluation.',
+      keyConcept: 'Review core fundamentals and algorithmic invariants.',
+    };
   }
 
+  const difficultyDelta = latestEntry?.difficulty_delta ?? 0;
   const difficultyChanged = Boolean(
-    evalData.difficulty_changed ??
-    evalData.difficultyChanged ??
-    raw.difficulty_changed ??
+    difficultyDelta !== 0 ||
+    evalData.difficulty_changed ||
+    evalData.difficultyChanged ||
+    raw.difficulty_changed ||
     raw.difficultyChanged
   );
 
+  const diffNum = latestEntry?.difficulty_after ?? raw.difficulty ?? evalData.difficulty;
   const adaptedNextDifficulty =
     evalData.adapted_next_difficulty ||
     evalData.next_difficulty ||
     raw.adapted_next_difficulty ||
     raw.next_difficulty ||
-    evalData.adaptedNextDifficulty;
+    evalData.adaptedNextDifficulty ||
+    (typeof diffNum === 'number' ? (diffNum >= 4 ? 'hard' : diffNum <= 1 ? 'easy' : 'medium') : 'medium');
 
   return {
     questionId: String(evalData.question_id || evalData.questionId || 'q'),
@@ -295,10 +354,27 @@ export const apiService = {
     }
 
     const data = await response.json();
+    const rawProjects = Array.isArray(data.projects)
+      ? data.projects
+      : Array.isArray(data.repositories)
+      ? data.repositories
+      : Array.isArray(data.repos)
+      ? data.repos
+      : [];
+
+    const repositories = rawProjects.map((p: any) => ({
+      name: p.project_name || p.name || 'Repository',
+      technologies: Array.isArray(p.technologies) ? p.technologies : [],
+      architecture: p.architecture || '',
+      importantFiles: Array.isArray(p.important_files) ? p.important_files : [],
+      interviewTopics: Array.isArray(p.interview_topics) ? p.interview_topics : [],
+      ...p,
+    }));
+
     return {
       success: true,
       data,
-      repositories: data.repositories || data.repos || [],
+      repositories,
     };
   },
 
@@ -494,6 +570,24 @@ export const apiService = {
     }
 
     const data = await response.json();
-    return data.recommendations || data.topics || (Array.isArray(data) ? data : []);
+    const topics = Array.isArray(data.recommended_topics)
+      ? data.recommended_topics.map((t: any) =>
+          typeof t === 'string'
+            ? { topic: t, explanation: 'Targeted preparation topic recommended from your interview evaluation.' }
+            : t
+        )
+      : [];
+
+    const roles = Array.isArray(data.recommended_roles)
+      ? data.recommended_roles.map((r: any) => ({
+          topic: r.role ? `${r.role} (Match: ${r.match_score}%)` : (r.topic || 'Recommended Role'),
+          explanation: Array.isArray(r.reasons) && r.reasons.length > 0
+            ? r.reasons.join(' ')
+            : 'Recommended career path based on your interview evaluation.',
+          keyConcepts: Array.isArray(r.reasons) ? r.reasons : [],
+        }))
+      : [];
+
+    return [...topics, ...roles];
   },
 };

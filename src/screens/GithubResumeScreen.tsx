@@ -83,11 +83,29 @@ export const GithubResumeScreen: React.FC = () => {
     try {
       const result = await apiService.analyzeResume(file, user);
       if (result && result.success) {
-        setUser(prev => ({
-          ...prev,
-          resumeFileName: file.name,
-          resumeUploaded: true,
-        }));
+        const profileData = result.data || result.analysis || {};
+        setUser(prev => {
+          const parsedSkills =
+            Array.isArray(profileData.skills) && profileData.skills.length > 0
+              ? profileData.skills
+              : prev.skills;
+
+          const parsedName =
+            profileData.name &&
+            typeof profileData.name === 'string' &&
+            profileData.name.trim() &&
+            profileData.name.trim().toLowerCase() !== 'candidate'
+              ? profileData.name.trim()
+              : prev.name;
+
+          return {
+            ...prev,
+            name: parsedName,
+            skills: parsedSkills,
+            resumeFileName: file.name,
+            resumeUploaded: true,
+          };
+        });
         setResumeStatus('success');
       } else {
         throw new Error(result?.error || 'Unable to connect/analyze');
